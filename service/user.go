@@ -3,13 +3,11 @@ package service
 import "time"
 
 type User struct {
-	Id           string    `json:"id"`
-	Username     string    `json:"username"`
-	Password     string    `json:"password"`
-	FullName     string    `json:"fullname"`
-	Email        string    `json:"email"`
-	Role         string    `json:"role"`
-	AutoDatetime time.Time `json:"auto_datetime"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	FullName string `json:"fullname"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
 }
 
 type UserDetail struct {
@@ -26,5 +24,5 @@ type UserService interface {
 	GetAllUsers() ([]UserDetail, error)
 	GetUserById(string) (*UserDetail, error)
 	UpdateUser(UserDetail) (string, error)
-	DeleteUser(string) (string, error)
+	DeleteUser(string) error
 }

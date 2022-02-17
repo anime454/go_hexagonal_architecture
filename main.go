@@ -33,23 +33,16 @@ func main() {
 		log.Fatalln("Can't create Table", err)
 	}
 
-	// id := uuid.NewString()
-	// mockuser := service.User{
-	// 	Id:           id,
-	// 	Username:     "admin_service",
-	// 	Password:     "1234",
-	// 	FullName:     "admin admin",
-	// 	Email:        "admin@admin.com",
-	// 	Role:         "admin",
-	// 	AutoDatetime: time.Now(),
-	// }
-
 	userRepo := repository.NewUserRepositoryDB(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
 	server := gin.Default()
-	server.GET("/getAll", userHandler.GetAll())
+	server.POST("/register", userHandler.Register())
+	server.GET("/getAllUser", userHandler.GetAllUser())
+	server.GET("/getUserById/:id/", userHandler.GetUserById())
+	server.POST("/updateUser", userHandler.UpdateUser())
+	server.POST("/deleteUser/:id/", userHandler.DeleteUserById())
 
 	srv := &http.Server{
 		Addr:    ":" + "9090",

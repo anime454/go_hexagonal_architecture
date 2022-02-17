@@ -1,6 +1,12 @@
 package service
 
-import "github.com/anime454/go_hexagonal_architecture/repository"
+import (
+	"database/sql"
+	"time"
+
+	"github.com/anime454/go_hexagonal_architecture/repository"
+	"github.com/google/uuid"
+)
 
 type userService struct {
 	userRepo repository.UserRepository
@@ -12,13 +18,13 @@ func NewUserService(repo repository.UserRepository) userService {
 
 func (us userService) Register(u User) (string, error) {
 	user := repository.User{
-		Id:           u.Id,
+		Id:           uuid.NewString(),
 		Username:     u.Username,
 		Password:     u.Password,
 		FullName:     u.FullName,
 		Email:        u.Email,
 		Role:         u.Role,
-		AutoDatetime: u.AutoDatetime,
+		AutoDatetime: time.Now(),
 	}
 	userId, err := us.userRepo.Create(user)
 	if err != nil {
@@ -49,8 +55,46 @@ func (us userService) GetAllUsers() ([]UserDetail, error) {
 	return users, nil
 }
 
-func (us userService) GetUserById(string) (*UserDetail, error) { return nil, nil }
+func (us userService) GetUserById(id string) (*UserDetail, error) {
+	u, err := us.userRepo.GetById(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	user := UserDetail{
+		Id:           u.Id,
+		Username:     u.Password,
+		FullName:     u.FullName,
+		Email:        u.Email,
+		Role:         u.Role,
+		AutoDatetime: u.AutoDatetime,
+	}
+	return &user, nil
+}
 
-func (us userService) UpdateUser(UserDetail) (string, error) { return "", nil }
+func (us userService) UpdateUser(u UserDetail) (string, error) {
+	uRepo := repository.UserDetail{
+		Id:           u.Id,
+		Username:     u.Username,
+		FullName:     u.FullName,
+		Email:        u.Email,
+		Role:         u.Role,
+		AutoDatetime: time.Now(),
+	}
+	userId, err := us.userRepo.Update(uRepo)
+	if err != nil {
+		return "", err
+	}
 
-func (us userService) DeleteUser(string) (string, error) { return "", nil }
+	return userId, nil
+}
+
+func (us userService) DeleteUser(id string) error {
+	err := us.userRepo.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

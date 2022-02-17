@@ -18,13 +18,8 @@ func (u userRepositoryDB) Create(user User) (string, error) {
 		return "", err
 	}
 
-	result, err := stmt.Exec(user.Id, user.Username, user.Password, user.FullName, user.Email, user.Role, user.AutoDatetime)
+	_, err = stmt.Exec(user.Id, user.Username, user.Password, user.FullName, user.Email, user.Role, user.AutoDatetime)
 	if err != nil {
-		return "", err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if rowsAffected <= 0 {
 		return "", err
 	}
 
@@ -57,13 +52,54 @@ func (u userRepositoryDB) GetAll() ([]User, error) {
 }
 
 func (u userRepositoryDB) GetById(id string) (*User, error) {
-	return nil, nil
+	res := User{}
+	stmt, err := u.db.Prepare(`select id, username, password, fullname, email, role, auto_datetime from user where id = ?`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.QueryRow(id).Scan(&res.Id, &res.Username, &res.Password, &res.FullName, &res.Email, &res.Role, &res.AutoDatetime)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
-func (u userRepositoryDB) Update(User) (*User, error) {
-	return nil, nil
+func (u userRepositoryDB) Update(user UserDetail) (string, error) {
+
+	stmt, err := u.db.Prepare(`UPDATE user SET username = ?, fullname = ?, email = ?, role = ?, auto_datetime = ? WHERE id = ?`)
+	if err != nil {
+		return "", err
+	}
+
+	result, err := stmt.Exec(user.Username, user.FullName, user.Email, user.Role, user.AutoDatetime, user.Id)
+	if err != nil {
+		return "", err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return "", err
+
+	}
+	if rowsAffected <= 0 {
+		return "", nil
+	}
+
+	return user.Id, nil
 }
 
 func (u userRepositoryDB) Delete(id string) error {
+	stmt, err := u.db.Prepare(`DELETE FROM user WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
