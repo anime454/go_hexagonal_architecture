@@ -44,6 +44,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 		if err != nil {
 			log.Fatalln(err)
 			c.JSON(500, Err500)
+			return
 		}
 
 		user := service.User{
@@ -58,6 +59,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 
 		c.JSON(200, gin.H{
@@ -75,6 +77,7 @@ func (uhdl userHandler) GetAllUser() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 		c.JSON(200, gin.H{
 			"code":    20000,
@@ -92,6 +95,7 @@ func (uhdl userHandler) GetUserById() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 		c.JSON(200, gin.H{
 			"code":    20000,
@@ -109,6 +113,7 @@ func (uhdl userHandler) UpdateUser() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 
 		user := service.UserDetail{
@@ -123,12 +128,14 @@ func (uhdl userHandler) UpdateUser() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 		c.JSON(200, gin.H{
 			"code":    20000,
 			"message": "Success",
 			"data":    res,
 		})
+
 	}
 	return fn
 }
@@ -140,6 +147,7 @@ func (uhdl userHandler) DeleteUserById() gin.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 			c.JSON(500, Err500)
+			return
 		}
 		c.JSON(200, gin.H{
 			"code":    20000,
