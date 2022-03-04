@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 
 	"github.com/anime454/go_hexagonal_architecture/handler"
+	"github.com/anime454/go_hexagonal_architecture/logs"
 	"github.com/anime454/go_hexagonal_architecture/repository"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ import (
 func main() {
 	db, err := sql.Open("sqlite3", "./tmp.db")
 	if err != nil {
-		log.Fatalln("Can't create Database", err)
+		logs.Error(err)
 	}
 
 	const createTable string = `
@@ -30,14 +30,15 @@ func main() {
 	);`
 	_, err = db.Exec(createTable)
 	if err != nil {
-		log.Fatalln("Can't create Table", err)
+		logs.Error(err)
 	}
 
 	userRepo := repository.NewUserRepositoryDB(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	server := gin.Default()
+	gin.SetMode("release")
+	server := gin.New()
 	server.POST("/register", userHandler.Register())
 	server.GET("/getAllUser", userHandler.GetAllUser())
 	server.GET("/getUserById/:id/", userHandler.GetUserById())
@@ -49,8 +50,10 @@ func main() {
 		Handler: server,
 	}
 
+	logs.Info("Start server on " + srv.Addr)
+
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("listen: %s\n", err)
+		logs.Error(err)
 	}
 
 }

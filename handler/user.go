@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 
+	"github.com/anime454/go_hexagonal_architecture/logs"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +43,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 		u := User{}
 		err := c.Bind(&u)
 		if err != nil {
-			log.Fatalln(err)
+			logs.Error(err)
 			c.JSON(500, Err500)
 			return
 		}
@@ -57,7 +58,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 
 		res, err := uhdl.userSv.Register(user)
 		if err != nil {
-			log.Fatal(err)
+			logs.Error(err)
 			c.JSON(500, Err500)
 			return
 		}
