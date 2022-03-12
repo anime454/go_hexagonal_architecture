@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/anime454/go_hexagonal_architecture/logs"
+	"github.com/anime454/go_hexagonal_architecture/responses"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +45,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 		err := c.Bind(&u)
 		if err != nil {
 			logs.Error(err)
-			c.JSON(500, Err500)
+			c.JSON(500, responses.InternalServerError())
 			return
 		}
 

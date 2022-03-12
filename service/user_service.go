@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/anime454/go_hexagonal_architecture/logs"
 	"github.com/anime454/go_hexagonal_architecture/repository"
+	"github.com/anime454/go_hexagonal_architecture/responses"
 	"github.com/google/uuid"
 )
 
@@ -27,16 +29,24 @@ func (us userService) Register(u User) (string, error) {
 		AutoDatetime: time.Now(),
 	}
 	userId, err := us.userRepo.Create(user)
+
 	if err != nil {
-		return "", err
+		logs.Error(err)
+		return "", responses.InternalServerError()
 	}
 	return userId, nil
 }
 
 func (us userService) GetAllUsers() ([]UserDetail, error) {
 	allUsersRepo, err := us.userRepo.GetAll()
+	if err.Error() == sql.ErrNoRows.Error() {
+		logs.Info(dataNotFound)
+		return nil, responses.DataNotFound()
+	}
+
 	if err != nil {
-		return nil, err
+		logs.Error(err)
+		return nil, responses.InternalServerError()
 	}
 
 	users := []UserDetail{}
@@ -59,9 +69,11 @@ func (us userService) GetUserById(id string) (*UserDetail, error) {
 	u, err := us.userRepo.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			logs.Info(dataNotFound)
+			return nil, responses.DataNotFound()
 		}
-		return nil, err
+		logs.Error(err)
+		return nil, responses.InternalServerError()
 	}
 	user := UserDetail{
 		Id:           u.Id,
@@ -85,7 +97,12 @@ func (us userService) UpdateUser(u UserDetail) (string, error) {
 	}
 	userId, err := us.userRepo.Update(uRepo)
 	if err != nil {
-		return "", err
+		if err == sql.ErrNoRows {
+			logs.Info(dataNotFound)
+			return "", responses.DataNotFound()
+		}
+		logs.Error(err)
+		return "", responses.InternalServerError()
 	}
 
 	return userId, nil
@@ -94,7 +111,12 @@ func (us userService) UpdateUser(u UserDetail) (string, error) {
 func (us userService) DeleteUser(id string) error {
 	err := us.userRepo.Delete(id)
 	if err != nil {
-		return err
+		if err == sql.ErrNoRows {
+			logs.Info(dataNotFound)
+			return responses.DataNotFound()
+		}
+		logs.Error(err)
+		return responses.InternalServerError()
 	}
 	return nil
 }

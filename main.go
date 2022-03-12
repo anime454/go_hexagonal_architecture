@@ -51,7 +51,6 @@ func main() {
 	}
 
 	logs.Info("Start server on " + srv.Addr)
-
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logs.Error(err)
 	}

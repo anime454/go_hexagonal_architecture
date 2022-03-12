@@ -19,6 +19,8 @@ type UserDetail struct {
 	AutoDatetime time.Time `json:"auto_datetime"`
 }
 
+var dataNotFound = "data not found"
+
 type UserService interface {
 	Register(User) (string, error)
 	GetAllUsers() ([]UserDetail, error)
