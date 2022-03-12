@@ -3,6 +3,8 @@ package handler
 import (
 	"log"
 
+	"github.com/anime454/go_hexagonal_architecture/logs"
+	"github.com/anime454/go_hexagonal_architecture/responses"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
 )
@@ -39,11 +41,12 @@ var Err500 = map[string]interface{}{
 
 func (uhdl userHandler) Register() gin.HandlerFunc {
 	fn := func(c *gin.Context) {
+		logs.Info("this is on register function ")
 		u := User{}
 		err := c.Bind(&u)
 		if err != nil {
-			log.Fatalln(err)
-			c.JSON(500, Err500)
+			logs.Error(err)
+			c.JSON(500, responses.InternalServerError())
 			return
 		}
 
@@ -57,7 +60,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 
 		res, err := uhdl.userSv.Register(user)
 		if err != nil {
-			log.Fatal(err)
+			logs.Error(err)
 			c.JSON(500, Err500)
 			return
 		}

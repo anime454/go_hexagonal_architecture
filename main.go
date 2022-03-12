@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
-	"log"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/anime454/go_hexagonal_architecture/handler"
+	"github.com/anime454/go_hexagonal_architecture/logs"
 	"github.com/anime454/go_hexagonal_architecture/repository"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
@@ -15,7 +18,7 @@ import (
 func main() {
 	db, err := sql.Open("sqlite3", "./tmp.db")
 	if err != nil {
-		log.Fatalln("Can't create Database", err)
+		logs.Error(err)
 	}
 
 	const createTable string = `
@@ -30,15 +33,16 @@ func main() {
 	);`
 	_, err = db.Exec(createTable)
 	if err != nil {
-		log.Fatalln("Can't create Table", err)
+		logs.Error(err)
 	}
 
 	userRepo := repository.NewUserRepositoryDB(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
+	gin.SetMode("release")
 	server := gin.Default()
-	server.POST("/register", userHandler.Register())
+	server.POST("/register", res(), userHandler.Register())
 	server.GET("/getAllUser", userHandler.GetAllUser())
 	server.GET("/getUserById/:id/", userHandler.GetUserById())
 	server.POST("/updateUser", userHandler.UpdateUser())
@@ -49,8 +53,38 @@ func main() {
 		Handler: server,
 	}
 
+	logs.Info("Start server on " + srv.Addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("listen: %s\n", err)
+		logs.Error(err)
 	}
 
+}
+
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	fmt.Println("on write")
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func (w bodyLogWriter) WriteString(s string) (int, error) {
+	fmt.Println("on writeString")
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
+}
+
+func res() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		now := time.Now()
+		fmt.Println(c.Request)
+		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		c.Writer = blw
+		c.Next()
+		responseTime := time.Since(now)
+		fmt.Println("Method: " + c.Request.Method + " URI: " + c.Request.RequestURI + " Time: " + responseTime.String() + " Response body: " + blw.body.String())
+	}
 }
