@@ -41,6 +41,7 @@ var Err500 = map[string]interface{}{
 
 func (uhdl userHandler) Register() gin.HandlerFunc {
 	fn := func(c *gin.Context) {
+		logs.Info("this is on register function ")
 		u := User{}
 		err := c.Bind(&u)
 		if err != nil {

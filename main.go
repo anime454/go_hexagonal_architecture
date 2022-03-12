@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/anime454/go_hexagonal_architecture/handler"
 	"github.com/anime454/go_hexagonal_architecture/logs"
@@ -38,8 +41,8 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	gin.SetMode("release")
-	server := gin.New()
-	server.POST("/register", userHandler.Register())
+	server := gin.Default()
+	server.POST("/register", res(), userHandler.Register())
 	server.GET("/getAllUser", userHandler.GetAllUser())
 	server.GET("/getUserById/:id/", userHandler.GetUserById())
 	server.POST("/updateUser", userHandler.UpdateUser())
@@ -55,4 +58,33 @@ func main() {
 		logs.Error(err)
 	}
 
+}
+
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	fmt.Println("on write")
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func (w bodyLogWriter) WriteString(s string) (int, error) {
+	fmt.Println("on writeString")
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
+}
+
+func res() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		now := time.Now()
+		fmt.Println(c.Request)
+		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		c.Writer = blw
+		c.Next()
+		responseTime := time.Since(now)
+		fmt.Println("Method: " + c.Request.Method + " URI: " + c.Request.RequestURI + " Time: " + responseTime.String() + " Response body: " + blw.body.String())
+	}
 }
