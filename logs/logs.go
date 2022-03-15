@@ -33,39 +33,22 @@ type AccessLog struct {
 
 func RequestLog(ac AccessLog, filed ...zapcore.Field) {
 	c := ac.ResponseCode
+	defaultLog := log.With(
+		zap.String("Ip", ac.Ip),
+		zap.String("RequestId", ac.RequestId),
+		zap.String("Method", ac.Method),
+		zap.String("Url", ac.Url),
+		zap.String("RequestBody", ac.RequestBody),
+		zap.Int("ResponseCode", ac.ResponseCode),
+		zap.String("ResponseBody", ac.ResponseBody),
+		zap.String("ResponserTime", ac.ResponserTime),
+	)
 	if c >= 20000 && c <= 39999 {
-		log.With(
-			zap.String("Ip", ac.Ip),
-			zap.String("RequestId", ac.RequestId),
-			zap.String("Method", ac.Method),
-			zap.String("Url", ac.Url),
-			zap.String("RequestBody", ac.RequestBody),
-			zap.Int("ResponseCode", ac.ResponseCode),
-			zap.String("ResponseBody", ac.ResponseBody),
-			zap.String("ResponserTime", ac.ResponserTime),
-		).Info("success", filed...)
+		defaultLog.Info("success", filed...)
 	} else if c >= 40000 && c <= 49999 {
-		log.With(
-			zap.String("Ip", ac.Ip),
-			zap.String("RequestId", ac.RequestId),
-			zap.String("Method", ac.Method),
-			zap.String("Url", ac.Url),
-			zap.String("RequestBody", ac.RequestBody),
-			zap.Int("ResponseCode", ac.ResponseCode),
-			zap.String("ResponseBody", ac.ResponseBody),
-			zap.String("ResponserTime", ac.ResponserTime),
-		).Info("warning", filed...)
+		defaultLog.Info("warning", filed...)
 	} else {
-		log.With(
-			zap.String("Ip", ac.Ip),
-			zap.String("RequestId", ac.RequestId),
-			zap.String("Method", ac.Method),
-			zap.String("Url", ac.Url),
-			zap.String("RequestBody", ac.RequestBody),
-			zap.Int("ResponseCode", ac.ResponseCode),
-			zap.String("ResponseBody", ac.ResponseBody),
-			zap.String("ResponserTime", ac.ResponserTime),
-		).Error("error")
+		defaultLog.Error("error", filed...)
 	}
 }
 
