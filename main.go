@@ -39,8 +39,8 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	gin.SetMode("release")
-	server := gin.Default()
-	// server := gin.New()
+	// server := gin.Default()
+	server := gin.New()
 	normalRoute := server.Group("/")
 	normalRoute.Use(middleware.InitAccessLog())
 	{

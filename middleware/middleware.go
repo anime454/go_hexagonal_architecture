@@ -27,13 +27,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// func (w bodyLogWriter) WriteString(s string) (int, error) {
-// 	fmt.Println("on writeString")
-// 	w.body.WriteString(s)
-// 	return w.ResponseWriter.WriteString(s)
-// }
-
-//thank you alot https://github.com/gin-gonic/gin/issues/961
+//thank you a lot https://github.com/gin-gonic/gin/issues/961
 func InitAccessLog() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		now := time.Now()
