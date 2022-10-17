@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/anime454/go_hexagonal_architecture/handler"
 	"github.com/anime454/go_hexagonal_architecture/logs"
+	"github.com/anime454/go_hexagonal_architecture/middleware"
 	"github.com/anime454/go_hexagonal_architecture/repository"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
@@ -41,12 +39,17 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	gin.SetMode("release")
-	server := gin.Default()
-	server.POST("/register", res(), userHandler.Register())
-	server.GET("/getAllUser", userHandler.GetAllUser())
-	server.GET("/getUserById/:id/", userHandler.GetUserById())
-	server.POST("/updateUser", userHandler.UpdateUser())
-	server.POST("/deleteUser/:id/", userHandler.DeleteUserById())
+	// server := gin.Default()
+	server := gin.New()
+	normalRoute := server.Group("/")
+	normalRoute.Use(middleware.InitAccessLog())
+	{
+		normalRoute.POST("/register", userHandler.Register())
+		normalRoute.GET("/getAllUser", userHandler.GetAllUser())
+		normalRoute.GET("/getUserById/:id/", userHandler.GetUserById())
+		normalRoute.POST("/updateUser", userHandler.UpdateUser())
+		normalRoute.POST("/deleteUser/:id/", userHandler.DeleteUserById())
+	}
 
 	srv := &http.Server{
 		Addr:    ":" + "9090",
@@ -58,33 +61,4 @@ func main() {
 		logs.Error(err)
 	}
 
-}
-
-type bodyLogWriter struct {
-	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-func (w bodyLogWriter) Write(b []byte) (int, error) {
-	fmt.Println("on write")
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
-}
-
-func (w bodyLogWriter) WriteString(s string) (int, error) {
-	fmt.Println("on writeString")
-	w.body.WriteString(s)
-	return w.ResponseWriter.WriteString(s)
-}
-
-func res() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		now := time.Now()
-		fmt.Println(c.Request)
-		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
-		c.Writer = blw
-		c.Next()
-		responseTime := time.Since(now)
-		fmt.Println("Method: " + c.Request.Method + " URI: " + c.Request.RequestURI + " Time: " + responseTime.String() + " Response body: " + blw.body.String())
-	}
 }

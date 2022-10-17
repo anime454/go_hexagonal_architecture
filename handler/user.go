@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/anime454/go_hexagonal_architecture/logs"
 	"github.com/anime454/go_hexagonal_architecture/responses"
 	"github.com/anime454/go_hexagonal_architecture/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type userHandler struct {
@@ -41,11 +43,11 @@ var Err500 = map[string]interface{}{
 
 func (uhdl userHandler) Register() gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		logs.Info("this is on register function ")
 		u := User{}
-		err := c.Bind(&u)
+		err := c.ShouldBindBodyWith(&u, binding.JSON)
 		if err != nil {
-			logs.Error(err)
+			fmt.Println(err)
+			logs.Error("can't bind parametor")
 			c.JSON(500, responses.InternalServerError())
 			return
 		}
@@ -60,7 +62,7 @@ func (uhdl userHandler) Register() gin.HandlerFunc {
 
 		res, err := uhdl.userSv.Register(user)
 		if err != nil {
-			logs.Error(err)
+			logs.Error(err.Error())
 			c.JSON(500, Err500)
 			return
 		}
