@@ -20,15 +20,15 @@ func main() {
 	}
 
 	const createTable string = `
-	CREATE TABLE IF NOT EXISTS user (
-		id VARCHAR(255) NOT NULL PRIMARY KEY,
-		username VARCHAR(255) NOT NULL,
-		password VARCHAR(255) NOT NULL,
-		fullname VARCHAR(255) NOT NULL,
-		email VARCHAR(255) NULL,
-		role VARCHAR(255) NOT NULL DEFAULT "user", 
-		auto_datetime DATETIME NOT NULL
-	);`
+		CREATE TABLE IF NOT EXISTS user (
+			id VARCHAR(255) NOT NULL PRIMARY KEY,
+			username VARCHAR(255) NOT NULL,
+			password VARCHAR(255) NOT NULL,
+			fullname VARCHAR(255) NOT NULL,
+			email VARCHAR(255) NULL,
+			role VARCHAR(255) NOT NULL DEFAULT "user", 
+			auto_datetime DATETIME NOT NULL
+		);`
 	_, err = db.Exec(createTable)
 	if err != nil {
 		logs.Error(err)
